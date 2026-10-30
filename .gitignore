@@ -10,3 +10,4 @@ next-env.d.ts
 test-results
 public/museum/_web
 .netlify
+.DS_Store
