@@ -131,7 +131,7 @@ async function enterMuseum(page, prefix) {
   check("look: mouse drag turns the camera", Math.abs(yaw1 - yaw0) > 0.2);
 
   // click a frame in the canvas: stand facing the west wall frame at z=-6.4
-  await setPos(page, -3.2, -6.4, Math.PI / 2);
+  await setPos(page, -3.2, -5.2, Math.PI / 2);
   await page.evaluate(() => window.__museum.store.getState().set({ view: "first" }));
   await sleep(5000);
   await page.screenshot({ path: `${OUT}/desktop-before-frame-click.png` });
@@ -154,7 +154,7 @@ async function enterMuseum(page, prefix) {
   await page.evaluate(() => window.__museum.store.getState().set({ view: "third" }));
 
   // proximity + E on a photo
-  await setPos(page, 5.6, -10, -Math.PI / 2);
+  await setPos(page, -5.6, -10.8, Math.PI / 2);
   await waitState(page, "s.near?.kind === 'photo'", 20000);
   s = await st(page);
   check("photo: walking close shows a prompt", s.near === "photo" && (await page.getByRole("button", { name: /View photo/ }).isVisible()));
@@ -322,7 +322,7 @@ async function enterMuseum(page, prefix) {
   });
   check("mobile: title and HUD buttons don't overlap", boxes.title.right <= boxes.nav.left + 1 && boxes.nav.right <= boxes.w);
 
-  await setPos(page, 5.6, -10, -Math.PI / 2);
+  await setPos(page, -5.6, -10.8, Math.PI / 2);
   await waitState(page, "s.near?.kind === 'photo'", 20000);
   await page.getByRole("button", { name: /View photo/ }).click();
   await sleep(1500);

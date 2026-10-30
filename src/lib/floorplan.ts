@@ -38,12 +38,10 @@ export const SPAWNS: Record<RoomId, { x: number; z: number; yaw: number }> = {
   dance: { x: 0, z: -29.6, yaw: 0 },
 };
 
-/** Suggest a room for the n-th photo so a set of photos fills every room. */
-export function defaultRoom(i: number): RoomId {
-  if (i < 2) return "entrance";
-  if (i < 9) return "gallery";
-  if (i < 10) return "cinema";
-  return "dance";
+/** Suggest a room for photo i of n so the set spreads evenly through every room. */
+export function defaultRoom(i: number, n = 12): RoomId {
+  const k = Math.min(FRAME_SLOTS.length - 1, Math.floor((i * FRAME_SLOTS.length) / Math.max(n, 1)));
+  return FRAME_SLOTS[k].room;
 }
 
 export function roomAt(z: number): RoomId {
@@ -110,13 +108,44 @@ const WX = HALF_W - t - 0.04;
 const west = (room: RoomId, z: number): FrameSlot => ({ room, x: -WX, z, y: 1.78, rotY: Math.PI / 2, nx: 1, nz: 0 });
 const east = (room: RoomId, z: number): FrameSlot => ({ room, x: WX, z, y: 1.78, rotY: -Math.PI / 2, nx: -1, nz: 0 });
 
-export const FRAME_SLOTS: FrameSlot[] = [
-  west("entrance", 7.4), east("entrance", 7.4), west("entrance", 3.2), east("entrance", 3.2),
-  west("gallery", -2.8), east("gallery", -2.8), west("gallery", -6.4), east("gallery", -6.4),
-  west("gallery", -10), east("gallery", -10), west("gallery", -13.4), east("gallery", -13.4),
-  west("cinema", -19.4), west("cinema", -24.6),
-  west("dance", -31.6), east("dance", -31.6), west("dance", -36.8), east("dance", -36.8),
+// Frames on an east-west wall (divider faces, the back wall, the letter wall).
+// faceSouth: the picture faces +z (it hangs on the south face of a wall).
+const FACE = t + 0.04;
+const across = (room: RoomId, x: number, wallZ: number, faceSouth: boolean): FrameSlot => ({
+  room,
+  x,
+  z: wallZ + (faceSouth ? FACE : -FACE),
+  y: 1.78,
+  rotY: faceSouth ? 0 : Math.PI,
+  nx: 0,
+  nz: faceSouth ? 1 : -1,
+});
+const pair = (room: RoomId, wallZ: number, faceSouth: boolean, x = 4.3) => [
+  across(room, -x, wallZ, faceSouth),
+  across(room, x, wallZ, faceSouth),
 ];
+
+/** 41 places to hang a photo, listed in the order a visitor walks past them. */
+export const FRAME_SLOTS: FrameSlot[] = [
+  // Entrance Hall (10)
+  west("entrance", 6.8), east("entrance", 6.8), west("entrance", 3.2), east("entrance", 3.2),
+  ...pair("entrance", 0, true), west("entrance", 10.4), east("entrance", 10.4),
+  ...pair("entrance", Z_SOUTH, false, 4.6),
+  // Photo Gallery (14)
+  west("gallery", -2.4), east("gallery", -2.4), west("gallery", -5.2), east("gallery", -5.2),
+  west("gallery", -8), east("gallery", -8), west("gallery", -10.8), east("gallery", -10.8),
+  west("gallery", -13.6), east("gallery", -13.6),
+  ...pair("gallery", -16, true), ...pair("gallery", 0, false),
+  // Cinema Room (7): the east wall is the screen
+  west("cinema", -18.6), west("cinema", -22), west("cinema", -25.4),
+  ...pair("cinema", -28, true), ...pair("cinema", -16, false),
+  // Dance & Letter Room (10)
+  west("dance", -30.8), east("dance", -30.8), west("dance", -34.4), east("dance", -34.4),
+  west("dance", -38), east("dance", -38),
+  ...pair("dance", Z_NORTH, true, 4.1), ...pair("dance", -28, false),
+];
+
+export const MAX_PHOTOS = FRAME_SLOTS.length;
 
 export interface PlacedPhoto {
   photo: Photo;

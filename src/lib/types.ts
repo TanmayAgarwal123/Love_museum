@@ -48,12 +48,21 @@ export interface Museum {
   passcode?: string; // 4 digits, optional
   theme: ThemeId;
   photos: Photo[];
+  /** Films for the cinema, played in order. */
+  videos?: MemoryVideo[];
+  /** @deprecated single film; read films with museumVideos() */
   video?: MemoryVideo;
   song?: Song;
   letter: string;
   avatars: { you: AvatarLook; partner: AvatarLook };
   createdAt: string;
   isDemo?: boolean;
+}
+
+/** All of a museum's films (supports the older single `video` field). */
+export function museumVideos(m: Pick<Museum, "videos" | "video">): MemoryVideo[] {
+  if (m.videos?.length) return m.videos.filter((v) => v.src);
+  return m.video?.src ? [m.video] : [];
 }
 
 export const ROOMS: { id: RoomId; name: string; blurb: string }[] = [

@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/icons";
 import type { PlacedPhoto } from "@/lib/floorplan";
 import { videoEmbedUrl } from "@/lib/media";
-import { interact, media, teleport, teleportTo, useMuseum, type Panel } from "@/lib/store";
-import { ROOMS, type Museum } from "@/lib/types";
+import { interact, media, stepFilm, teleport, teleportTo, useMuseum, type Panel } from "@/lib/store";
+import { ROOMS, museumVideos, type Museum } from "@/lib/types";
 import { MobileJoystick } from "./MobileJoystick";
 
 function useIsTouch() {
@@ -101,10 +101,9 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
 
   const focusedIndex = placed.findIndex((p) => p.photo.id === s.focusedPhotoId);
   const focused = focusedIndex >= 0 ? placed[focusedIndex] : null;
-  const embedUrl = useMemo(
-    () => (museum.video && museum.video.kind !== "file" ? videoEmbedUrl(museum.video.kind, museum.video.src) : null),
-    [museum.video],
-  );
+  const films = useMemo(() => museumVideos(museum), [museum]);
+  const film = films.length ? films[s.videoIndex % films.length] : undefined;
+  const embedUrl = useMemo(() => (film && film.kind !== "file" ? videoEmbedUrl(film.kind, film.src) : null), [film]);
 
   const togglePanel = (p: Panel) => s.set({ panel: s.panel === p ? null : p });
   const toggleSong = () => s.set({ songPlaying: !s.songPlaying });
@@ -187,8 +186,20 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
             </button>
           )}
           {s.sitting && (
-            <div className="flex flex-wrap justify-center gap-2 anim-pop">
-              {museum.video?.kind === "file" && (
+            <div className="flex flex-col items-center gap-2 anim-pop">
+              {film && (
+                <p className="rounded-full bg-[rgba(251,249,246,0.92)] px-4 py-1.5 text-sm font-semibold max-w-[86vw] truncate" aria-live="polite">
+                  {films.length > 1 ? `Film ${(s.videoIndex % films.length) + 1} of ${films.length} · ` : ""}
+                  {film.title || "Our memory film"}
+                </p>
+              )}
+            <div className="flex flex-wrap justify-center gap-2">
+              {films.length > 1 && (
+                <button type="button" className="hud-btn min-h-12 min-w-12" aria-label="Previous film" onClick={() => stepFilm(-1, films.length)}>
+                  <ArrowLeft size={18} />
+                </button>
+              )}
+              {film?.kind === "file" && (
                 <>
                   <button type="button" className="hud-btn min-h-12 px-5" onClick={() => (media.video?.paused ? media.video.play() : media.video?.pause())}>
                     {s.videoPlaying ? <Pause size={16} /> : <Play size={16} />} {s.videoPlaying ? "Pause" : "Play"}
@@ -199,13 +210,19 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
                     aria-label={s.videoMuted ? "Unmute film" : "Mute film"}
                     onClick={() => media.video && (media.video.muted = !media.video.muted)}
                   >
-                    <Volume size={16} muted={s.videoMuted} /> {s.videoMuted ? "Sound on" : "Mute"}
+                    <Volume size={16} muted={s.videoMuted} /> <span className="hidden sm:inline">{s.videoMuted ? "Sound on" : "Mute"}</span>
                   </button>
                 </>
+              )}
+              {films.length > 1 && (
+                <button type="button" className="hud-btn min-h-12 min-w-12" aria-label="Next film" onClick={() => stepFilm(1, films.length)}>
+                  <ArrowRight size={18} />
+                </button>
               )}
               <button type="button" className="btn btn-primary min-h-12" onClick={() => s.set({ sitting: false })}>
                 Stand up {!touch && <kbd className="rounded bg-white/25 px-2 py-0.5 text-sm">E</kbd>}
               </button>
+            </div>
             </div>
           )}
           {s.dancing && (
@@ -227,7 +244,7 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
       {/* embedded film (YouTube / Vimeo) while sitting */}
       {s.sitting && embedUrl && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[58%] w-[min(92vw,960px)] aspect-video rounded-lg overflow-hidden shadow-2xl bg-black anim-pop">
-          <iframe src={embedUrl} title={museum.video?.title || "Our memory film"} allow="autoplay; encrypted-media; fullscreen" allowFullScreen className="w-full h-full" />
+          <iframe src={embedUrl} title={film?.title || "Our memory film"} allow="autoplay; encrypted-media; fullscreen" allowFullScreen className="w-full h-full" />
         </div>
       )}
 

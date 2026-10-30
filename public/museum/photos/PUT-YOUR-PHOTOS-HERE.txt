@@ -1,9 +1,11 @@
-Put up to 12 photos in this folder (JPG, PNG or WEBP).
+Put your photos in this folder (JPG, PNG or WEBP). The walls hold up to 41.
 
-They are hung on the museum walls in FILE-NAME order, so name them:
-  01.jpg, 02.jpg, 03.jpg ... 12.jpg
+They are hung in FILE-NAME order and spread through all four rooms,
+so name them:
+  01.jpg, 02.jpg, 03.jpg ... 25.jpg ...
 
-Then write a title / date / caption for each one in
+Then (optional) write a title / date / caption for each one in
   src/content/museum.config.ts  (the "photos" section, matched by file name).
 
+Big photos are fine: web-sized copies are made automatically.
 iPhone photos (.HEIC) won't show in browsers - export them as JPG first.

@@ -62,6 +62,8 @@ interface MuseumState {
   songPlaying: boolean;
   videoPlaying: boolean;
   videoMuted: boolean;
+  /** Which film in the playlist the cinema is showing. */
+  videoIndex: number;
   quality: "high" | "low";
   slowWarning: boolean;
   set: (p: Partial<MuseumState>) => void;
@@ -82,6 +84,7 @@ const initial = {
   songPlaying: false,
   videoPlaying: false,
   videoMuted: false,
+  videoIndex: 0,
   quality: "high" as const,
   slowWarning: false,
 };
@@ -120,6 +123,13 @@ useMuseum.subscribe((s, prev) => {
 /** True while the player shouldn't be walking around. */
 export function isLocked(s: Pick<MuseumState, "focusedPhotoId" | "sitting" | "dancing" | "letterOpen" | "panel">) {
   return Boolean(s.focusedPhotoId || s.sitting || s.dancing || s.letterOpen || s.panel);
+}
+
+/** Step the cinema playlist by +1 / -1 (wraps around). */
+export function stepFilm(delta: number, count: number) {
+  if (count < 2) return;
+  const s = useMuseum.getState();
+  s.set({ videoIndex: (s.videoIndex + delta + count) % count });
 }
 
 export function interact(target: Interactable | null) {

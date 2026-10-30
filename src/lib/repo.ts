@@ -127,9 +127,11 @@ export const repo: MuseumRepository = localRepository;
 export async function resolveMuseum(m: Museum): Promise<Museum> {
   const r = (ref?: string) => (ref ? repo.resolveMedia(ref) : Promise.resolve(undefined));
   const photos = await Promise.all(m.photos.map(async (p) => ({ ...p, src: (await r(p.src)) ?? "" })));
-  const video = m.video ? { ...m.video, src: (await r(m.video.src)) ?? "", poster: await r(m.video.poster) } : undefined;
+  const resolveVideo = async (v: NonNullable<Museum["video"]>) => ({ ...v, src: (await r(v.src)) ?? "", poster: await r(v.poster) });
+  const video = m.video ? await resolveVideo(m.video) : undefined;
+  const videos = m.videos ? await Promise.all(m.videos.map(resolveVideo)) : undefined;
   const song = m.song ? { ...m.song, src: (await r(m.song.src)) ?? "" } : undefined;
-  return { ...m, photos: photos.filter((p) => p.src), video, song };
+  return { ...m, photos: photos.filter((p) => p.src), video, videos, song };
 }
 
 export function makeSlug(a: string, b: string) {

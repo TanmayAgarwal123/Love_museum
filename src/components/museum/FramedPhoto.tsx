@@ -12,7 +12,6 @@ const MAX_W = 1.7;
 const MAX_H = 1.36;
 const MAT = 0.12;
 const BORDER = 0.06;
-const MAX_TEX = 1600;
 
 function fit(aspect: number): [number, number] {
   let w = MAX_W;
@@ -24,7 +23,7 @@ function fit(aspect: number): [number, number] {
   return [w, h];
 }
 
-function Picture({ src, onSize }: { src: string; onSize: (a: number) => void }) {
+function Picture({ src, onSize, maxTex }: { src: string; onSize: (a: number) => void; maxTex: number }) {
   const tex = useTexture(src, (t) => {
     const tx = Array.isArray(t) ? t[0] : t;
     tx.colorSpace = THREE.SRGBColorSpace;
@@ -35,8 +34,8 @@ function Picture({ src, onSize }: { src: string; onSize: (a: number) => void }) 
   const img = tex.image as CanvasImageSource & { width: number; height: number };
   // Phone photos can be 4000px+; a dozen of those exhausts GPU memory on mobile.
   const map = useMemo(() => {
-    if (!img?.width || Math.max(img.width, img.height) <= MAX_TEX) return tex;
-    const k = MAX_TEX / Math.max(img.width, img.height);
+    if (!img?.width || Math.max(img.width, img.height) <= maxTex) return tex;
+    const k = maxTex / Math.max(img.width, img.height);
     const c = document.createElement("canvas");
     c.width = Math.round(img.width * k);
     c.height = Math.round(img.height * k);
@@ -46,7 +45,7 @@ function Picture({ src, onSize }: { src: string; onSize: (a: number) => void }) 
     t.anisotropy = 8;
     tex.dispose();
     return t;
-  }, [tex, img]);
+  }, [tex, img, maxTex]);
   const [w, h] = fit(img?.width ? img.width / img.height : 4 / 3);
   return (
     <mesh position={[0, 0, 0.032]}>
@@ -56,7 +55,7 @@ function Picture({ src, onSize }: { src: string; onSize: (a: number) => void }) 
   );
 }
 
-export function FramedPhoto({ placed, theme }: { placed: PlacedPhoto; theme: SceneTheme }) {
+export function FramedPhoto({ placed, theme, maxTex = 1600 }: { placed: PlacedPhoto; theme: SceneTheme; maxTex?: number }) {
   const { photo, slot } = placed;
   const [aspect, setAspect] = useState(4 / 3);
   const [hover, setHover] = useState(false);
@@ -121,7 +120,7 @@ export function FramedPhoto({ placed, theme }: { placed: PlacedPhoto; theme: Sce
               </mesh>
             }
           >
-            <Picture src={photo.src} onSize={setAspect} />
+            <Picture src={photo.src} onSize={setAspect} maxTex={maxTex} />
           </Suspense>
         )}
       </group>

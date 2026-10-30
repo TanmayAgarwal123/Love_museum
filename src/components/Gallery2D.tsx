@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { daysTogether, formatLongDate, spotifyEmbed, videoEmbedUrl, youtubeId } from "@/lib/media";
-import { ROOMS } from "@/lib/types";
+import { ROOMS, museumVideos } from "@/lib/types";
 import { isUnlocked, markUnlocked, useMuseumData } from "@/lib/useMuseumData";
 import { PasscodeGate } from "./PasscodeGate";
 import { HeartFill, Pause, Play } from "./ui/icons";
@@ -62,7 +62,7 @@ export function Gallery2D({ slug }: { slug: string }) {
       setPlaying(false);
     }
   };
-  const embed = m.video && m.video.kind !== "file" ? videoEmbedUrl(m.video.kind, m.video.src, false) : null;
+  const films = museumVideos(m);
 
   return (
     <div data-theme={m.theme} id="content" className="bg-paper text-ink min-h-[100svh] pb-28">
@@ -84,7 +84,7 @@ export function Gallery2D({ slug }: { slug: string }) {
               {days !== null && <span className="text-gold font-semibold"> · {days.toLocaleString()} days</span>}
             </p>
           )}
-          <p className="mt-4 text-lg text-ink-soft">{m.photos.length} photos{m.video ? ", a film" : ""}{m.song ? ", our song" : ""} and a letter.</p>
+          <p className="mt-4 text-lg text-ink-soft">{m.photos.length} photos{films.length > 1 ? `, ${films.length} films` : films.length ? ", a film" : ""}{m.song ? ", our song" : ""} and a letter.</p>
         </div>
         {m.photos[0] && (
           <figure className="hidden lg:block">
@@ -129,17 +129,29 @@ export function Gallery2D({ slug }: { slug: string }) {
         );
       })}
 
-      {m.video && (
+      {films.length > 0 && (
         <section aria-labelledby="cinema" className="bg-[#16121a] text-[#f6efe8] px-[var(--gutter)] py-20 sm:py-28 mt-10">
           <div className="max-w-[1100px] mx-auto">
-            <h2 id="cinema" className="text-[clamp(2rem,4.5vw,3.6rem)]">{m.video.title || "Our memory film"}</h2>
-            <div className="mt-10 aspect-video w-full bg-black">
-              {embed ? (
-                <iframe src={embed} title={m.video.title || "Our memory film"} allow="encrypted-media; fullscreen" allowFullScreen className="w-full h-full" />
-              ) : (
-                <video src={m.video.src} poster={m.video.poster} controls playsInline className="w-full h-full" />
-              )}
-            </div>
+            <h2 id="cinema" className="text-[clamp(2rem,4.5vw,3.6rem)]">
+              {films.length > 1 ? "Our films" : films[0].title || "Our memory film"}
+            </h2>
+            <ol className="mt-10 flex flex-col gap-14">
+              {films.map((v, i) => {
+                const embed = v.kind !== "file" ? videoEmbedUrl(v.kind, v.src, false) : null;
+                return (
+                  <li key={`${v.src}-${i}`}>
+                    {films.length > 1 && <h3 className="text-2xl sm:text-3xl mb-5">{v.title || `Film ${i + 1}`}</h3>}
+                    <div className="aspect-video w-full bg-black">
+                      {embed ? (
+                        <iframe src={embed} title={v.title || `Film ${i + 1}`} allow="encrypted-media; fullscreen" allowFullScreen className="w-full h-full" loading="lazy" />
+                      ) : (
+                        <video src={v.src} poster={v.poster} controls playsInline preload="metadata" className="w-full h-full" />
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         </section>
       )}

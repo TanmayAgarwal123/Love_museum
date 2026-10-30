@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { WALL_H, buildInteractables, hangPhotos } from "@/lib/floorplan";
 import { sim, useMuseum } from "@/lib/store";
 import { SCENE_THEMES } from "@/lib/themes";
-import type { Museum } from "@/lib/types";
+import { museumVideos, type Museum } from "@/lib/types";
 import { BenchCinema } from "./BenchCinema";
 import { DanceFloor } from "./DanceFloor";
 import { FramedPhoto } from "./FramedPhoto";
@@ -102,6 +102,13 @@ export default function MuseumCanvas({ museum }: { museum: Museum }) {
   const theme = SCENE_THEMES[museum.theme] ?? SCENE_THEMES.classic;
   const placed = useMemo(() => hangPhotos(museum.photos), [museum.photos]);
   const interactables = useMemo(() => buildInteractables(placed), [placed]);
+  const films = useMemo(() => museumVideos(museum), [museum]);
+  // Keep GPU memory in check: smaller textures on phones and in big museums.
+  const maxTex = useMemo(() => {
+    const phone = window.matchMedia("(pointer: coarse)").matches;
+    if (placed.length > 20) return phone ? 768 : 1200;
+    return phone ? 1024 : 1600;
+  }, [placed.length]);
   const drag = useRef<{ id: number; x: number; y: number; moved: boolean; touch: boolean } | null>(null);
 
   return (
@@ -150,9 +157,9 @@ export default function MuseumCanvas({ museum }: { museum: Museum }) {
         <Lighting color={theme.light} ambient={theme.ambient} />
         <GalleryRoom museum={museum} theme={theme} quality={quality} />
         {placed.map((p) => (
-          <FramedPhoto key={p.photo.id} placed={p} theme={theme} />
+          <FramedPhoto key={p.photo.id} placed={p} theme={theme} maxTex={maxTex} />
         ))}
-        <BenchCinema video={museum.video} />
+        <BenchCinema videos={films} />
         <DanceFloor />
         <LoveLetter letter={museum.letter} partnerName={museum.partnerName} theme={theme} />
         <PlayerController museum={museum} placed={placed} interactables={interactables} />

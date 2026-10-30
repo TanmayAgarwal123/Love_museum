@@ -3,25 +3,25 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { BENCH, SCREEN } from "@/lib/floorplan";
-import { interact, media, sim, useMuseum } from "@/lib/store";
+import { interact, media, sim, stepFilm, useMuseum } from "@/lib/store";
 import type { MemoryVideo } from "@/lib/types";
 import { DISPLAY_FONT, UI_FONT, canvasTexture } from "./canvasText";
 
-export function BenchCinema({ video }: { video?: MemoryVideo }) {
-  const sitting = useMuseum((s) => s.sitting);
-  const isFile = video?.kind === "file" && !!video.src;
 
+export function BenchCinema({ videos }: { videos: MemoryVideo[] }) {
+  const sitting = useMuseum((s) => s.sitting);
+  const index = useMuseum((s) => s.videoIndex) % Math.max(videos.length, 1);
+  const current = videos[index];
+  const hasFiles = videos.some((v) => v.kind === "file");
+
+  // One <video> element for the whole playlist; its source changes per film.
   const el = useMemo(() => {
-    if (!isFile || !video) return null;
+    if (!hasFiles) return null;
     const v = document.createElement("video");
-    const sameOrigin = video.src.startsWith("/") || video.src.startsWith("blob:") || video.src.startsWith(location.origin);
-    if (!sameOrigin) v.crossOrigin = "anonymous";
-    v.src = video.src;
-    v.loop = true;
     v.playsInline = true;
     v.preload = "metadata";
     return v;
-  }, [isFile, video]);
+  }, [hasFiles]);
 
   const videoTex = useMemo(() => {
     if (!el) return null;
@@ -38,12 +38,13 @@ export function BenchCinema({ video }: { video?: MemoryVideo }) {
         ctx.textAlign = "center";
         ctx.fillStyle = "#f6efe8";
         ctx.font = `400 84px ${DISPLAY_FONT}`;
-        ctx.fillText(video?.title || "Our memory film", w / 2, h / 2 - 10);
+        const title = videos.length > 1 ? `${videos.length} films for you` : videos[0]?.title || "Our memory film";
+        ctx.fillText(title, w / 2, h / 2 - 10);
         ctx.fillStyle = "#e8a0b4";
         ctx.font = `500 34px ${UI_FONT}`;
-        ctx.fillText(video ? "Take a seat on the bench to watch" : "No film added yet", w / 2, h / 2 + 64);
+        ctx.fillText(videos.length ? "Take a seat on the bench to watch" : "No film added yet", w / 2, h / 2 + 64);
       }),
-    [video],
+    [videos],
   );
 
   // Register the element so HUD controls (play/pause/mute) can drive it.
@@ -54,20 +55,40 @@ export function BenchCinema({ video }: { video?: MemoryVideo }) {
     const onPlay = () => s.set({ videoPlaying: true });
     const onPause = () => s.set({ videoPlaying: false });
     const onVol = () => s.set({ videoMuted: el.muted });
+    // When a film ends, roll on to the next one (and loop back to the first).
+    const onEnded = () => {
+      if (videos.length > 1) stepFilm(1, videos.length);
+      else el.play().catch(() => undefined);
+    };
     el.addEventListener("play", onPlay);
     el.addEventListener("pause", onPause);
     el.addEventListener("volumechange", onVol);
+    el.addEventListener("ended", onEnded);
     return () => {
       el.pause();
       el.removeEventListener("play", onPlay);
       el.removeEventListener("pause", onPause);
       el.removeEventListener("volumechange", onVol);
+      el.removeEventListener("ended", onEnded);
       if (media.video === el) media.video = null;
     };
-  }, [el]);
+  }, [el, videos.length]);
 
+  // Load the current film, and play it while sitting.
   useEffect(() => {
     if (!el) return;
+    if (!current || current.kind !== "file") {
+      el.pause();
+      return;
+    }
+    if (el.dataset.src !== current.src) {
+      const sameOrigin = current.src.startsWith("/") || current.src.startsWith("blob:") || current.src.startsWith(location.origin);
+      if (sameOrigin) el.removeAttribute("crossorigin");
+      else el.crossOrigin = "anonymous";
+      el.dataset.src = current.src;
+      el.src = current.src;
+      el.load();
+    }
     if (sitting) {
       useMuseum.getState().set({ songPlaying: false });
       el.play().catch(() => {
@@ -76,9 +97,9 @@ export function BenchCinema({ video }: { video?: MemoryVideo }) {
         el.play().catch(() => undefined);
       });
     } else el.pause();
-  }, [sitting, el]);
+  }, [sitting, el, current]);
 
-  const showVideo = sitting && videoTex;
+  const showVideo = sitting && videoTex && current?.kind === "file";
 
   return (
     <group>

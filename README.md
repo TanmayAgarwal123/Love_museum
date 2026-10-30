@@ -11,25 +11,28 @@ Built with Next.js 16, TypeScript, Tailwind CSS v4, React Three Fiber, drei and 
 You only touch **three folders and one file**:
 
 ```
-public/museum/photos/        ← your photos (up to 12)
-public/museum/video/         ← one video
+public/museum/photos/        ← your photos (up to 41)
+public/museum/video/         ← your videos (3–4 is perfect, up to 8)
 public/museum/song/          ← optional MP3 (otherwise Spotify "Yellow" is used)
 src/content/museum.config.ts ← names, date, captions, the letter
 ```
 
 ### 1. Add your photos
 
-1. Put up to **12 photos** in `public/museum/photos/` (JPG, PNG or WEBP).
-2. Name them in the order you want them hung: `01.jpg`, `02.jpg`, `03.jpg` … `12.jpg`.
-   - Photos 1–2 go in the Entrance Hall, 3–9 in the Photo Gallery, 10 in the Cinema Room and 11–12 in the Dance & Letter Room. You can change any photo's room in step 4.
+1. Put your photos in `public/museum/photos/` (JPG, PNG or WEBP). The walls hold up to **41**: Entrance Hall 10, Photo Gallery 14, Cinema Room 7, Dance & Letter Room 10.
+2. Name them in the order you want them hung: `01.jpg`, `02.jpg`, `03.jpg` … `25.jpg` …
+   - They're spread evenly through the four rooms in that order, earliest first. To put a photo in a particular room, set its `room` in step 4.
 3. **iPhone users:** HEIC photos don't show in browsers. Export or convert them to JPG first. On a Mac, open them in Preview and use File › Export › JPEG. You can also set Settings › Camera › Formats › Most Compatible on the phone.
-4. Big photos are fine; they're shrunk automatically for the 3D view.
+4. Big photos are fine. Web-sized copies (and the right rotation for phone photos) are made automatically when you run `npm run dev` or build, so even 40 photos load quickly on her phone.
 
-### 2. Add your video
+### 2. Add your videos
 
-1. Put **one** video in `public/museum/video/`. Any file name works, for example `our-video.mp4`.
-2. Use **MP4 (H.264)**. iPhone `.mov` files often won't play in Chrome or on Android. Convert them with iMovie / QuickTime (File › Export › 1080p) or [HandBrake](https://handbrake.fr), choosing the "Fast 1080p30" preset.
-3. Keep it **under about 90 MB**, because GitHub rejects files over 100 MB. One to three minutes is perfect.
+1. Put your videos in `public/museum/video/`. 3–4 is perfect (up to 8).
+2. Name them in the order they should play: `01.mp4`, `02.mp4`, `03.mp4`, `04.mp4`.
+   - When you two sit on the cinema bench, they play one after another on the big screen. Previous / Next buttons and "Film 2 of 4 · title" appear at the bottom. After the last one, it loops back to the first.
+   - Give each one a title in step 4 (the `videos` section).
+3. Use **MP4 (H.264)**. iPhone `.mov` files often won't play in Chrome or on Android. Convert them with iMovie / QuickTime (File › Export › 1080p) or [HandBrake](https://handbrake.fr), choosing the "Fast 1080p30" preset.
+4. Keep **each** video under about 90 MB, because GitHub rejects files over 100 MB. 20–50 MB starts faster on a phone, and 720p or 1080p is plenty.
 
 ### 3. The song
 
@@ -52,6 +55,17 @@ Open that file in any text editor. It's already filled in with:
 | `passcode` | `""` (no passcode). Put 4 digits, like `"3005"`, to make her type one. |
 | `theme` | `"classic"`, `"blush"` or `"midnight"` |
 
+Give each video a title, matched by **file name**:
+
+```ts
+videos: {
+  "01.mp4": { title: "The beginning" },
+  "02.mp4": { title: "Our first trip" },
+  "03.mp4": { title: "Silly us" },
+  "04.mp4": { title: "Five months" },
+},
+```
+
 Then give each photo a title, date and caption. These are matched by **file name**, exactly as in the photos folder:
 
 ```ts
@@ -73,7 +87,7 @@ npm install
 npm run dev          # open http://localhost:3000
 ```
 
-The terminal prints what it found, for example `[museum] 9 photo(s), video: our-video.mp4`. It also warns you about HEIC photos, `.mov` videos or files that are too big. Then:
+The terminal prints what it found, for example `[museum] 25 photo(s), 4 video(s) (01.mp4, 02.mp4, 03.mp4, 04.mp4)`. It also warns you about HEIC photos, `.mov` videos or files that are too big. Then:
 
 ```bash
 git add -A
