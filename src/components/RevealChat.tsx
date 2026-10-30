@@ -37,6 +37,10 @@ export function RevealChat({
   const [shown, setShown] = useState(0);
   const [typing, setTyping] = useState(false);
   const done = shown >= messages.length;
+  const [qrSize, setQrSize] = useState(228);
+  useEffect(() => {
+    if (window.innerHeight < 900 && window.innerWidth < 640) setQrSize(168);
+  }, []);
 
   useEffect(() => {
     if (reduced) {
@@ -70,23 +74,23 @@ export function RevealChat({
         )}
       </header>
 
-      <section className="flex-1 grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16 items-center px-[var(--gutter)] py-10 lg:py-6 max-w-[1320px] w-full mx-auto">
+      <section className="flex-1 grid lg:grid-cols-[1.05fr_1fr] gap-6 sm:gap-10 lg:gap-16 items-center px-[var(--gutter)] pt-6 pb-8 sm:py-10 lg:py-6 max-w-[1320px] w-full mx-auto">
         <div className="anim-rise order-1">
-          <p className="text-ink-soft text-base sm:text-lg mb-5">
+          <p className="text-ink-soft text-base sm:text-lg mb-3 sm:mb-5">
             {museum.yourName} &amp; {museum.partnerName} · {museum.occasion}
           </p>
-          <h1 className="text-[clamp(2.75rem,7.4vw,6.6rem)] font-normal">{museum.title}</h1>
-          <p className="mt-8 text-lg sm:text-xl max-w-[34ch] leading-relaxed">
+          <h1 className="text-[clamp(2.5rem,7.4vw,6.6rem)] font-normal">{museum.title}</h1>
+          <p className="hidden sm:block mt-8 text-lg sm:text-xl max-w-[34ch] leading-relaxed">
             For {museum.partnerName}: a small museum of our photos, our film, our song and a letter. Walk through it together.
           </p>
           {museum.startDate && (
-            <p className="mt-4 text-ink-soft">Together since {formatLongDate(museum.startDate)}</p>
+            <p className="mt-3 sm:mt-4 text-ink-soft">Together since {formatLongDate(museum.startDate)}</p>
           )}
         </div>
 
         <div className="order-2 w-full max-w-[440px] lg:justify-self-end mx-auto lg:mx-0">
-          <div className="rounded-[28px] bg-stone p-4 sm:p-5" aria-live="polite">
-            <div className="flex items-center gap-3 px-1 pb-4">
+          <div className="rounded-[28px] bg-stone p-3 sm:p-5" aria-live="polite">
+            <div className="flex items-center gap-3 px-1 pb-3 sm:pb-4">
               <span className="grid place-items-center w-10 h-10 rounded-full bg-blush text-[#2a2124] font-semibold">
                 {museum.avatars.you.initials || museum.yourName[0]}
               </span>
@@ -95,7 +99,7 @@ export function RevealChat({
                 <p className="text-sm text-ink-soft">{done ? "sent just now" : typing ? "typing…" : "online"}</p>
               </div>
             </div>
-            <ul className="flex flex-col gap-2 min-h-[132px]">
+            <ul className="flex flex-col gap-2 min-h-[120px] sm:min-h-[132px]">
               {messages.slice(0, shown).map((m) => (
                 <li key={m.text} className="anim-pop self-start max-w-[85%] rounded-2xl rounded-bl-md bg-paper px-4 py-2.5 text-[1.02rem]">
                   {m.text}
@@ -110,8 +114,8 @@ export function RevealChat({
               )}
             </ul>
 
-            <div className={`mt-4 flex flex-col items-center gap-4 rounded-2xl bg-paper px-4 pt-6 pb-5 transition-opacity duration-500 ${done ? "opacity-100" : "opacity-0 pointer-events-none"}`} aria-hidden={!done}>
-              <HeartQR url={shareUrl} size={228} />
+            <div className={`mt-4 flex flex-col items-center gap-4 rounded-2xl bg-paper px-4 pt-4 sm:pt-6 pb-4 sm:pb-5 transition-opacity duration-500 ${done ? "opacity-100" : "opacity-0 pointer-events-none"}`} aria-hidden={!done}>
+              <HeartQR url={shareUrl} size={qrSize} />
               <button type="button" onClick={onEnter} className="btn btn-primary w-full text-base min-h-[54px]" tabIndex={done ? 0 : -1}>
                 <HeartFill size={18} /> Enter our museum
               </button>

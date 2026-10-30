@@ -4,10 +4,11 @@ import "@fontsource/playfair-display/600.css";
 import "@fontsource/playfair-display/400-italic.css";
 import "@fontsource-variable/inter";
 import "./globals.css";
+import { museumConfig } from "@/content/museum.config";
 
 export const metadata: Metadata = {
-  title: "Museum of Us",
-  description: "I was making something for you. A little 3D museum of our photos, our film, our song and a letter.",
+  title: `For ${museumConfig.partnerName} · ${museumConfig.title}`,
+  description: `I was making something for you. A little museum of our photos, our film, our song and a letter, from ${museumConfig.yourName}.`,
   icons: { icon: "/icon.svg" },
 };
 

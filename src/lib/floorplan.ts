@@ -38,6 +38,14 @@ export const SPAWNS: Record<RoomId, { x: number; z: number; yaw: number }> = {
   dance: { x: 0, z: -29.6, yaw: 0 },
 };
 
+/** Suggest a room for the n-th photo so a set of photos fills every room. */
+export function defaultRoom(i: number): RoomId {
+  if (i < 2) return "entrance";
+  if (i < 9) return "gallery";
+  if (i < 10) return "cinema";
+  return "dance";
+}
+
 export function roomAt(z: number): RoomId {
   if (z > 0) return "entrance";
   if (z > -16) return "gallery";

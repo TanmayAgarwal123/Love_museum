@@ -1,6 +1,7 @@
 "use client";
 
 import { DEMO_MUSEUM } from "./demo";
+import { OUR_MUSEUM } from "./ourMuseum";
 import type { MediaRef, Museum } from "./types";
 
 /**
@@ -84,6 +85,8 @@ export const localRepository: MuseumRepository = {
     return Object.values(seedIfEmpty()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
   async get(slug) {
+    // Built into the site from src/content/museum.config.ts, so it opens on any device.
+    if (slug === OUR_MUSEUM.slug) return OUR_MUSEUM;
     if (slug === DEMO_MUSEUM.slug) {
       // The demo always reflects the code (so edits to demo.ts show up).
       seedIfEmpty();

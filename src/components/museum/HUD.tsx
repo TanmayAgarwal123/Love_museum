@@ -23,7 +23,6 @@ import { videoEmbedUrl } from "@/lib/media";
 import { interact, media, teleport, teleportTo, useMuseum, type Panel } from "@/lib/store";
 import { ROOMS, type Museum } from "@/lib/types";
 import { MobileJoystick } from "./MobileJoystick";
-import { SpotifyEmbed } from "./SongPlayer";
 
 function useIsTouch() {
   const [touch, setTouch] = useState(false);
@@ -108,10 +107,7 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
   );
 
   const togglePanel = (p: Panel) => s.set({ panel: s.panel === p ? null : p });
-  const toggleSong = () => {
-    if (museum.song?.kind === "spotify") togglePanel("song");
-    else s.set({ songPlaying: !s.songPlaying });
-  };
+  const toggleSong = () => s.set({ songPlaying: !s.songPlaying });
 
   const busy = s.sitting || s.dancing || !!focused || s.letterOpen;
   const prompt = !busy && s.near ? s.near : null;
@@ -357,12 +353,6 @@ export function HUD({ museum, placed, shareUrl }: { museum: Museum; placed: Plac
             {!museum.isDemo && (
               <p className="hint">This museum is saved in this browser. Connect a database (see the README) to open it on other devices.</p>
             )}
-          </Dialog>
-        )}
-        {s.panel === "song" && museum.song && (
-          <Dialog title={museum.song.title || "Our song"} onClose={() => s.set({ panel: null })}>
-            {museum.song.kind === "spotify" ? <SpotifyEmbed song={museum.song} /> : null}
-            <p className="hint mt-3">Press play in the player above.</p>
           </Dialog>
         )}
       </div>

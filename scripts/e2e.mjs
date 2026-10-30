@@ -82,10 +82,15 @@ async function enterMuseum(page, prefix) {
   await page.screenshot({ path: `${OUT}/desktop-home.png` });
   check("home: no horizontal overflow", !(await overflow(page)));
   const homeQR = await decodeQR(page, "canvas[role=img]");
-  check("home: heart QR decodes to the demo link", homeQR?.endsWith("/m/demo"), homeQR ?? "no decode");
+  check("home: heart QR decodes to the site root", homeQR === `${BASE}/`, homeQR ?? "no decode");
+  check("home: shows the configured names", await page.getByText(/Tanmay & Lakshmi/).first().isVisible());
 
   await page.getByRole("button", { name: "Enter our museum" }).click();
-  await page.waitForURL(/\/m\/demo/);
+  await page.waitForFunction(() => !!window.__museum, null, { timeout: 15000 });
+  const songKind = await page.evaluate(() => !!document.querySelector('[role=region][aria-label^="Our song"]'));
+  check("home: enters her museum (no passcode) with the Spotify song player", songKind);
+
+  await page.goto(`${BASE}/m/demo?enter=1`);
   await page.getByLabel("Digit 1").fill("0000");
   check("passcode: wrong code rejected", await page.getByText("Not quite").isVisible());
   await page.getByLabel("Digit 1").fill("1234");
@@ -283,6 +288,10 @@ async function enterMuseum(page, prefix) {
   await page.goto(BASE);
   await sleep(4300);
   await page.screenshot({ path: `${OUT}/mobile-home.png` });
+  check("mobile home: Enter button visible without scrolling", await page.evaluate(() => {
+    const b = [...document.querySelectorAll("button")].find((x) => x.textContent.includes("Enter our museum"));
+    return !!b && b.getBoundingClientRect().bottom <= innerHeight;
+  }));
   check("mobile home: no overflow", !(await overflow(page)));
   await page.goto(`${BASE}/create`);
   await sleep(500);

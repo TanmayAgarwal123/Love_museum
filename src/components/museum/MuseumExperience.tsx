@@ -131,12 +131,12 @@ function Museum3D({ museum, shareUrl }: { museum: Museum; shareUrl: string }) {
   );
 }
 
-export function MuseumExperience({ slug }: { slug: string }) {
+export function MuseumExperience({ slug, sharePath }: { slug: string; sharePath?: string }) {
   const data = useMuseumData(slug);
   const params = useSearchParams();
   const [phase, setPhase] = useState<"reveal" | "gate" | "museum">(params.get("enter") ? "gate" : "reveal");
   const [shareUrl, setShareUrl] = useState("");
-  useEffect(() => setShareUrl(`${window.location.origin}/m/${slug}`), [slug]);
+  useEffect(() => setShareUrl(`${window.location.origin}${sharePath ?? `/m/${slug}`}`), [slug, sharePath]);
 
   const museum = data.status === "ready" ? data.museum : null;
   useEffect(() => {

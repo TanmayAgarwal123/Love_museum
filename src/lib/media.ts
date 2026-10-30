@@ -15,6 +15,11 @@ export function spotifyEmbed(url: string): string | null {
   return m ? `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator` : null;
 }
 
+export function spotifyUri(url: string): string | null {
+  const m = url.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|album|playlist|episode)\/([A-Za-z0-9]+)/);
+  return m ? `spotify:${m[1]}:${m[2]}` : null;
+}
+
 export function detectVideoKind(url: string): VideoKind {
   if (youtubeId(url)) return "youtube";
   if (vimeoId(url)) return "vimeo";

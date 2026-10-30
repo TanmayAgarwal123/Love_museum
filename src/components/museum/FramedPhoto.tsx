@@ -12,6 +12,7 @@ const MAX_W = 1.7;
 const MAX_H = 1.36;
 const MAT = 0.12;
 const BORDER = 0.06;
+const MAX_TEX = 1600;
 
 function fit(aspect: number): [number, number] {
   let w = MAX_W;
@@ -31,12 +32,26 @@ function Picture({ src, onSize }: { src: string; onSize: (a: number) => void }) 
     const img = tx.image as { width: number; height: number };
     if (img?.width) onSize(img.width / img.height);
   });
-  const img = tex.image as { width: number; height: number };
+  const img = tex.image as CanvasImageSource & { width: number; height: number };
+  // Phone photos can be 4000px+; a dozen of those exhausts GPU memory on mobile.
+  const map = useMemo(() => {
+    if (!img?.width || Math.max(img.width, img.height) <= MAX_TEX) return tex;
+    const k = MAX_TEX / Math.max(img.width, img.height);
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * k);
+    c.height = Math.round(img.height * k);
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    tex.dispose();
+    return t;
+  }, [tex, img]);
   const [w, h] = fit(img?.width ? img.width / img.height : 4 / 3);
   return (
     <mesh position={[0, 0, 0.032]}>
       <planeGeometry args={[w, h]} />
-      <meshStandardMaterial map={tex} roughness={0.55} />
+      <meshStandardMaterial map={map} roughness={0.55} />
     </mesh>
   );
 }

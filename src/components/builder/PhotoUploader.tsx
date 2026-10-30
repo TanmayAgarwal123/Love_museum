@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Close } from "@/components/ui/icons";
+import { defaultRoom } from "@/lib/floorplan";
 import { ROOMS, type RoomId } from "@/lib/types";
 
 export interface DraftPhoto {
@@ -18,13 +19,7 @@ export const MAX_PHOTOS = 12;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-/** Suggest a room for the n-th photo so a fresh upload fills every room. */
-export function defaultRoom(i: number): RoomId {
-  if (i < 2) return "entrance";
-  if (i < 9) return "gallery";
-  if (i < 10) return "cinema";
-  return "dance";
-}
+export { defaultRoom };
 
 export function PhotoUploader({ photos, onChange }: { photos: DraftPhoto[]; onChange: (p: DraftPhoto[]) => void }) {
   const input = useRef<HTMLInputElement>(null);

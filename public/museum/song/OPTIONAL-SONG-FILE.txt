@@ -1,0 +1,6 @@
+Optional. Leave this folder empty to use the Spotify link in
+src/content/museum.config.ts ("Yellow").
+
+If you put an MP3 here (e.g. yellow.mp3), the museum plays that file
+instead. It always plays the full song with no Spotify login, and starts
+instantly from the Song button and the dance floor.
