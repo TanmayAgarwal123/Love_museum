@@ -9,3 +9,4 @@ next-env.d.ts
 .playwright-cli
 test-results
 public/museum/_web
+.netlify
