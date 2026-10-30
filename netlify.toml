@@ -1,0 +1,8 @@
+# Netlify builds the Next.js app automatically (OpenNext adapter).
+# `npm run build` first scans public/museum/ for your photos and videos.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
